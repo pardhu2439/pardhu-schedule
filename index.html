@@ -1,1 +1,326 @@
-fghj
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pardhu Schedule</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f0c29"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+    .header {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .title-small { font-size: 12px; color: #94a3b8; letter-spacing: 1px; }
+    .title-big { font-size: 22px; font-weight: 700; }
+    .streak {
+      background: linear-gradient(135deg, #f97316, #ef4444);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .ticker {
+      margin: 12px 16px 0;
+      background: rgba(99,102,241,0.2);
+      border: 1px solid rgba(99,102,241,0.4);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #c7d2fe;
+      text-align: center;
+    }
+    .body { padding: 16px; }
+    .current-card {
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      border: 2px solid;
+    }
+    .label-small { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+    .slot-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+    .slot-time { font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
+    .progress-bar-bg {
+      background: rgba(255,255,255,0.1);
+      border-radius: 999px;
+      height: 10px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 1s ease;
+    }
+    .progress-pct { font-size: 11px; color: #94a3b8; margin-top: 4px; text-align: right; }
+    .day-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .day-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .day-label { font-size: 13px; color: #94a3b8; }
+    .day-count { font-weight: 700; color: #4ade80; }
+    .day-msg { font-size: 12px; color: #94a3b8; margin-top: 6px; }
+    .section-label { font-size: 13px; color: #94a3b8; letter-spacing: 1px; margin-bottom: 10px; }
+    .slot-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-radius: 14px;
+      padding: 13px 16px;
+      margin-bottom: 10px;
+      border: 1.5px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .slot-item.current { border-width: 2px; }
+    .check-circle {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .check-circle.done { color: #000; }
+    .slot-name { font-size: 15px; font-weight: 500; color: #e2e8f0; }
+    .slot-name.current-name { font-weight: 700; }
+    .now-badge {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 7px; border-radius: 999px;
+      color: #000; margin-left: 6px;
+    }
+    .slot-timerange { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .notif-btn {
+      display: block;
+      width: 100%;
+      margin: 20px 0 0;
+      padding: 14px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="title-small">PARDHU'S</div>
+    <div class="title-big">Schedule Tracker</div>
+  </div>
+  <div class="streak">🔥 <span id="streak">16</span></div>
+</div>
+<div class="ticker" id="ticker">ఇది చేయి Pardhu! 💪</div>
+
+<div class="body">
+  <div class="current-card" id="currentCard">
+    <div class="label-small">RIGHT NOW</div>
+    <div class="slot-title" id="currentTitle">Loading...</div>
+    <div class="slot-time" id="currentTime"></div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-pct" id="progressPct">0%</div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-row">
+      <span class="day-label">Today's Goal Progress</span>
+      <span class="day-count" id="dayCount">0/5 tasks</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="dayFill" style="width:0%; background: linear-gradient(90deg,#4ade80,#22c55e)"></div>
+    </div>
+    <div class="day-msg" id="dayMsg">Let's get started! 💪</div>
+  </div>
+
+  <div class="section-label">SCHEDULE</div>
+  <div id="scheduleList"></div>
+
+  <button class="notif-btn" onclick="enableNotifications()">
+    🔔 Enable Reminders
+  </button>
+</div>
+
+<script>
+const SCHEDULE = [
+  { id:1, time:"06:00", end:"08:00", label:"Python 🐍", color:"#4ade80", study:true },
+  { id:2, time:"08:00", end:"10:00", label:"Break ☕", color:"#94a3b8", study:false },
+  { id:3, time:"10:00", end:"12:00", label:"DSA 🧠", color:"#60a5fa", study:true },
+  { id:4, time:"12:00", end:"15:00", label:"Break 🍽️", color:"#94a3b8", study:false },
+  { id:5, time:"15:00", end:"17:00", label:"Core 💻", color:"#f472b6", study:true },
+  { id:6, time:"17:00", end:"18:30", label:"Aptitude 📐", color:"#fb923c", study:true },
+  { id:7, time:"18:30", end:"19:30", label:"Break 🎮", color:"#94a3b8", study:false },
+  { id:8, time:"19:30", end:"20:30", label:"English 📖", color:"#a78bfa", study:true },
+  { id:9, time:"20:30", end:"21:00", label:"Break 😌", color:"#94a3b8", study:false },
+  { id:10, time:"21:00", end:"06:00", label:"Sleep 🌙", color:"#1e40af", study:false },
+];
+
+const MOTIVATIONAL = [
+  "ఇది చేయి Pardhu! 💪",
+  "Ek dum solid! 🔥",
+  "Stay focused bro! 🎯",
+  "No shortcuts, only results! ⚡",
+  "Consistency is king! 👑",
+  "మళ్ళీసారి కలిసే వరకు నేలవు! 🦉",
+];
+
+let checked = JSON.parse(localStorage.getItem('checked') || '{}');
+let streak = parseInt(localStorage.getItem('streak') || '16');
+document.getElementById('streak').textContent = streak;
+
+function toMin(t) {
+  const [h,m] = t.split(':').map(Number);
+  return h*60+m;
+}
+function nowMin() {
+  const n = new Date();
+  return n.getHours()*60 + n.getMinutes();
+}
+function fmt(t) {
+  const [h,m] = t.split(':').map(Number);
+  const ap = h>=12?'PM':'AM';
+  return `${h%12||12}:${m.toString().padStart(2,'0')} ${ap}`;
+}
+function getCurrentSlot() {
+  const now = nowMin();
+  for(let i=0;i<SCHEDULE.length-1;i++){
+    const s=toMin(SCHEDULE[i].time), e=toMin(SCHEDULE[i].end);
+    if(now>=s && now<e) return SCHEDULE[i];
+  }
+  return SCHEDULE[9];
+}
+function getProgress(slot) {
+  const now = nowMin();
+  let s=toMin(slot.time), e=toMin(slot.end);
+  if(e<=s) e+=1440;
+  let n = now < s ? now+1440 : now;
+  return Math.min(100, Math.max(0, ((n-s)/(e-s))*100));
+}
+
+function render() {
+  const slot = getCurrentSlot();
+  const prog = getProgress(slot);
+
+  const card = document.getElementById('currentCard');
+  card.style.background = `linear-gradient(135deg,${slot.color}33,${slot.color}11)`;
+  card.style.borderColor = slot.color;
+  document.getElementById('currentTitle').textContent = slot.label;
+  document.getElementById('currentTitle').style.color = slot.color;
+  document.getElementById('currentTime').textContent = `${fmt(slot.time)} → ${fmt(slot.end)}`;
+  document.getElementById('progressFill').style.width = prog+'%';
+  document.getElementById('progressFill').style.background = slot.color;
+  document.getElementById('progressPct').textContent = Math.round(prog)+'% done';
+
+  // Day progress
+  const studySlots = SCHEDULE.filter(s=>s.study);
+  const done = studySlots.filter(s=>checked[s.id]).length;
+  const pct = Math.round((done/studySlots.length)*100);
+  document.getElementById('dayCount').textContent = `${done}/${studySlots.length} tasks`;
+  document.getElementById('dayFill').style.width = pct+'%';
+  document.getElementById('dayMsg').textContent =
+    pct===0 ? "Let's get started! 💪" :
+    pct<50 ? "Keep going Pardhu! 🔥" :
+    pct<100 ? "Almost there! ⚡" : "LEGEND MODE 👑";
+
+  // Schedule list
+  const list = document.getElementById('scheduleList');
+  list.innerHTML = '';
+  SCHEDULE.forEach(s => {
+    const isCurrent = s.id === slot.id;
+    const isDone = checked[s.id];
+    const div = document.createElement('div');
+    div.className = 'slot-item' + (isCurrent?' current':'');
+    if(isCurrent) {
+      div.style.background = `linear-gradient(135deg,${s.color}22,${s.color}08)`;
+      div.style.borderColor = s.color;
+    }
+    div.innerHTML = `
+      <div class="check-circle ${isDone?'done':''}" style="${isDone?`background:${s.color};border-color:${s.color}`:`border-color:${s.study?s.color:'rgba(255,255,255,0.1)'}`}">
+        ${isDone?'✓': s.study?'':'·'}
+      </div>
+      <div style="flex:1">
+        <div class="slot-name ${isCurrent?'current-name':''}" style="${isCurrent?`color:${s.color}`:''}">
+          ${s.label}
+          ${isCurrent?`<span class="now-badge" style="background:${s.color}">NOW</span>`:''}
+        </div>
+        <div class="slot-timerange">${fmt(s.time)} – ${fmt(s.end)}</div>
+      </div>
+      ${isCurrent?'<span style="font-size:20px">⚡</span>':''}
+    `;
+    if(s.study) {
+      div.onclick = () => {
+        checked[s.id] = !checked[s.id];
+        localStorage.setItem('checked', JSON.stringify(checked));
+        render();
+      };
+    }
+    list.appendChild(div);
+  });
+}
+
+// Motivational ticker
+let mi = 0;
+setInterval(()=>{
+  mi = (mi+1)%MOTIVATIONAL.length;
+  document.getElementById('ticker').textContent = MOTIVATIONAL[mi];
+}, 4000);
+
+// Update every minute
+setInterval(render, 60000);
+render();
+
+// Notifications
+function enableNotifications() {
+  if(!('Notification' in window)) { alert('Notifications not supported'); return; }
+  Notification.requestPermission().then(p => {
+    if(p==='granted') {
+      alert('✅ Reminders enabled! You will get notified at each slot start.');
+      scheduleNotifications();
+    } else {
+      alert('Please allow notifications to get reminders!');
+    }
+  });
+}
+
+function scheduleNotifications() {
+  if('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      console.log('SW registered');
+    });
+  }
+}
+
+// Reset checked daily at midnight
+const today = new Date().toDateString();
+if(localStorage.getItem('lastDay') !== today) {
+  localStorage.setItem('checked', '{}');
+  localStorage.setItem('lastDay', today);
+  checked = {};
+}
+</script>
+</body>
+</html>
